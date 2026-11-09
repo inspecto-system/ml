@@ -69,6 +69,20 @@ def set_trainable(model: nn.Module, prefixes: Sequence[str]) -> int:
     return count
 
 
+def train_mode(model: nn.Module) -> None:
+    """Training mode, but frozen batch-norm layers keep their pretrained statistics.
+
+    A batch-norm layer in training mode updates its running mean and variance from every batch even
+    when its weights are frozen; with the backbone frozen that would quietly change the pretrained
+    features.
+    """
+    model.train()
+    for module in model.modules():
+        frozen = not any(parameter.requires_grad for parameter in module.parameters())
+        if isinstance(module, nn.modules.batchnorm._BatchNorm) and frozen:
+            module.eval()
+
+
 def augment(batch: np.ndarray, rng: np.random.Generator, crop: int = CROP) -> torch.Tensor:
     """Random crop, flip and brightness: ``(B, S, S, 3)`` uint8 → ``(B, 3, crop, crop)`` float."""
     side = batch.shape[1]
@@ -186,7 +200,7 @@ class Trainer:
     def _epoch(
         self, optimizer: torch.optim.Optimizer, loss: nn.Module, rng: np.random.Generator
     ) -> float:
-        self.model.train()
+        train_mode(self.model)
         order = rng.permutation(len(self.data.images))
         total = 0.0
         size = self.recipe.batch_size

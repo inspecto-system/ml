@@ -19,6 +19,7 @@ from inspecto_ml.finetune import (
     augment,
     predict,
     set_trainable,
+    train_mode,
 )
 from inspecto_ml.imagecache import balanced_subset, cached_images, square
 from inspecto_ml.manifest import load_manifest
@@ -174,3 +175,31 @@ def test_command_line_fine_tunes_and_reports(
     assert len(run["epochs"]) == 2
     assert "macro_f1" in run["test"]
     assert (tmp_path / "w.pt").stat().st_size > 0
+
+
+class _WithBatchNorm(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.body = nn.Conv2d(3, 4, 1)
+        self.norm = nn.BatchNorm2d(4)
+        self.classifier = nn.Linear(4, 2)
+
+    def forward(self, images: torch.Tensor) -> torch.Tensor:
+        out: torch.Tensor = self.classifier(self.norm(self.body(images)).mean(dim=(2, 3)))
+        return out
+
+
+def test_train_mode_keeps_frozen_batch_norm_statistics() -> None:
+    model = _WithBatchNorm()
+    set_trainable(model, ("classifier",))
+    before = model.norm.running_mean.clone()  # type: ignore[union-attr]  # a buffer of BatchNorm2d
+
+    train_mode(model)
+    model(torch.rand(4, 3, 5, 5))
+
+    assert not model.norm.training
+    assert model.classifier.training
+    assert torch.equal(model.norm.running_mean, before)  # type: ignore[arg-type]
+    set_trainable(model, ("norm", "classifier"))
+    train_mode(model)
+    assert model.norm.training
