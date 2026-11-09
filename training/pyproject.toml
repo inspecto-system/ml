@@ -6,6 +6,9 @@ readme = "../README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "numpy>=2.5.4",
+    "onnx>=1.23.2",
+    "onnxruntime>=1.31.1",
+    "onnxscript>=0.7.2",
     "pillow>=13.0.0",
     "scikit-learn>=1.9.1",
     "torch>=2.15.0",
@@ -75,7 +78,7 @@ branch = true
 [tool.coverage.report]
 fail_under = 80
 
-# scikit-learn and torchvision ship no type information (no py.typed, no stubs package).
+# scikit-learn, torchvision and onnxruntime ship no type information (no py.typed, no stubs package).
 [[tool.mypy.overrides]]
-module = ["sklearn.*", "torchvision.*"]
+module = ["sklearn.*", "torchvision.*", "onnxruntime.*"]
 ignore_missing_imports = true
