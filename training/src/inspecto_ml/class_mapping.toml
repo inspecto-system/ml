@@ -1,0 +1,38 @@
+# ML-02: classes of the open datasets → system defect categories of Inspecto.
+# Approved by the owner on 2026-11-09 (platform/docs/ML_DOCUMENTATION.md §3.7).
+#
+# role: "train" — used for training and validation; "evaluation" — only to check generalisation.
+# classes: dataset class → category code, or "NO_DEFECT" (an image without a defect).
+# excluded: dataset classes that are not used at all.
+
+[bd3]
+role = "train"
+excluded = []
+
+[bd3.classes]
+algae = "MOLD"          # green/black biological patches — closest to mould in a flat
+major_crack = "CRACK"   # crack width is not used: severity is not predicted (ADR-016)
+minor_crack = "CRACK"
+peeling = "PEELING"
+plain = "NO_DEFECT"
+spalling = "SPALLING"
+stain = "STAIN"
+
+[sdnet2018]
+role = "train"
+# Bridge decks and pavements are too far from flats; only walls are used.
+excluded = ["D/CD", "D/UD", "P/CP", "P/UP"]
+
+[sdnet2018.classes]
+"W/CW" = "CRACK"
+"W/UW" = "NO_DEFECT"
+
+[fbd]
+role = "evaluation"
+# Plants on facades do not occur in flats; as OTHER they would teach "other = plants".
+excluded = ["vegetation"]
+
+[fbd.classes]
+crack = "CRACK"
+spalling = "SPALLING"   # the authors' spalling includes detached plaster that may look like PEELING
+stain = "STAIN"         # includes dark biological stains that may look like MOLD
