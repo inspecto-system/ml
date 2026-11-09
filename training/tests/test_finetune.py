@@ -114,6 +114,8 @@ def test_trainer_learns_colours_and_keeps_the_best_epoch() -> None:
         head_lr=0.05,
         tune_lr=0.01,
         crop=32,
+        head_epochs=1,
+        tune_epochs=2,
     )
     messages: list[str] = []
     model = _Tiny(2)

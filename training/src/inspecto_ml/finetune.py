@@ -26,10 +26,10 @@ class Recipe:
     timm_name: str
     head: tuple[str, ...]
     last_blocks: tuple[str, ...]
-    head_epochs: int = 1
-    tune_epochs: int = 2
+    head_epochs: int = 2
+    tune_epochs: int = 6
     batch_size: int = 32
-    head_lr: float = 1e-3
+    head_lr: float = 3e-3
     tune_lr: float = 1e-4
     label_smoothing: float = 0.1
     crop: int = CROP
