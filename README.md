@@ -5,6 +5,7 @@ ML-трек Inspecto: подсказка категории дефекта по 
 | Каталог | Что внутри |
 |---|---|
 | `training/` | Аудит наборов данных, обучение и оценка модели (пакет `inspecto_ml`) |
+| `service/` | ml-service — подсказки категорий по фото (пакет `ml_service`, контракт `platform/api/ml.yaml`), образ — `Dockerfile` в корне |
 
 Наборы данных, собственные фотографии и веса моделей в git не попадают (`.gitignore`): они хранятся только на ПК владельца в каталоге `data/`.
 
@@ -81,3 +82,27 @@ MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W)":/repo -w /repo/training -e TOR
     --fbd ../data/interim/fbd/train-test-split --split ../data/splits/split.json \
     --features ../data/features --out ../data/runs/baseline.json'
 ```
+
+## ml-service (T-601)
+
+FastAPI + ONNX Runtime (CPU). `POST /internal/v1/classify {photoId}` — принимает только сервисный токен core-service со scope `ml.classify` (RS256, JWKS core, issuer, audience `inspecto-internal`), сам скачивает вариант `preview` фото из media-service своим токеном (клиент `ml-service`, scope `photos.read`) и возвращает до трёх категорий; «нет дефекта» или уверенность ниже порога модели — пустой список. Ошибки — RFC 9457 (`application/problem+json`), заголовок `X-Request-Id`. `GET /health/ready` — `503`, пока модель не загружена.
+
+| Переменная | По умолчанию | Назначение |
+|---|---|---|
+| `ML_PORT` | `8084` | Порт |
+| `ML_CORE_URL` | `http://127.0.0.1:8081` | core-service: JWKS и выдача сервисного токена |
+| `ML_CORE_CLIENT_SECRET` | — (обязательна, ≥ 32 символов) | Секрет клиента `ml-service` в core |
+| `ML_JWKS_URL` | `{ML_CORE_URL}/api/v1/.well-known/jwks.json` | Ключи подписи core |
+| `ML_JWT_ISSUER`, `ML_JWT_INTERNAL_AUDIENCE` | `inspecto-core`, `inspecto-internal` | Проверка токена |
+| `ML_MEDIA_URL` | `http://127.0.0.1:8082` | media-service |
+| `ML_MODEL_DIR` | `/models/current` | Каталог с `model.onnx` и `model.json` (`inspecto_ml.export_cli`) |
+
+Модель в образ не входит — каталог монтируется (только для чтения):
+
+```sh
+docker build -t inspecto/ml-service .
+MSYS_NO_PATHCONV=1 docker run --rm -p 8084:8084 -e ML_CORE_CLIENT_SECRET=... \
+  -v "$(pwd -W)/data/models/resnet50-logreg-917dcdb8":/models/current:ro inspecto/ml-service
+```
+
+Проверки — как у `training/`, из каталога `service/`.
