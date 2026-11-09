@@ -1,0 +1,7 @@
+# Only the service goes into the image: never the datasets, photos or models (data/).
+*
+!service/pyproject.toml
+!service/uv.lock
+!service/.python-version
+!service/src/**
+**/__pycache__

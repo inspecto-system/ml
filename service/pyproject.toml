@@ -1,0 +1,75 @@
+[project]
+name = "inspecto-ml-service"
+version = "0.1.0"
+description = "Inspecto ml-service: defect category suggestions for a photo (ONNX Runtime, CPU)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.162.2",
+    "httpx>=0.28.1",
+    "numpy>=2.5.4",
+    "onnxruntime>=1.31.1",
+    "pillow>=13.0.0",
+    "pyjwt[crypto]>=2.15.1",
+    "uvicorn>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=2.4.1",
+    "onnx>=1.23.2",
+    "pytest>=9.2.0",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.17.4",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "ml_service"
+
+[tool.uv]
+required-version = "==0.13.7"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# Same rules as training/ (CODE_QUALITY.md §1–2).
+select = [
+    "E", "W", "F", "I", "N", "UP", "B", "S", "A", "C4", "C90", "SIM", "PT", "RET", "ARG",
+    "PL", "PTH", "ERA", "ANN", "RUF", "T20", "BLE", "TRY",
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 5
+
+[tool.ruff.lint.per-file-ignores]
+# pytest checks are plain assert statements, and expected values are written inline in them.
+"tests/**" = ["S101", "PLR2004"]
+
+[tool.mypy]
+strict = true
+files = ["src", "tests"]
+
+# onnxruntime ships no type information (no py.typed, no stubs package).
+[[tool.mypy.overrides]]
+module = ["onnxruntime.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers --cov-report=term-missing"
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.coverage.run]
+source = ["ml_service"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80

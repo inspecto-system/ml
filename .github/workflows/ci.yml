@@ -22,6 +22,18 @@ jobs:
     with:
       working-directory: training
 
+  service:
+    if: github.event_name != 'schedule'
+    uses: inspecto-system/platform/.github/workflows/python.yml@main
+    with:
+      working-directory: service
+
+  container:
+    if: github.event_name != 'schedule'
+    uses: inspecto-system/platform/.github/workflows/container.yml@main
+    with:
+      image: inspecto/ml-service
+
   security:
     uses: inspecto-system/platform/.github/workflows/security.yml@main
     permissions:
