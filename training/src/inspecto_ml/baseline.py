@@ -55,7 +55,7 @@ def majority_baseline(parts: dict[Part, PartData]) -> dict[str, Any]:
     }
 
 
-def _probe(c: float, seed: int) -> Pipeline:
+def probe(c: float, seed: int) -> Pipeline:
     return make_pipeline(
         StandardScaler(),
         LogisticRegression(
@@ -70,7 +70,7 @@ def linear_probe(parts: dict[Part, PartData], seed: int) -> dict[str, Any]:
     search: dict[str, float] = {}
     best: tuple[float, float, Pipeline] | None = None
     for c in C_GRID:
-        model = _probe(c, seed).fit(train.features, train.targets)
+        model = probe(c, seed).fit(train.features, train.targets)
         score = float(_scores(model, val)["macro_f1"])
         search[str(c)] = score
         if best is None or score > best[0]:

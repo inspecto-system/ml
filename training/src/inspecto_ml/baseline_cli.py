@@ -26,7 +26,10 @@ from inspecto_ml.split import Part
 log = logging.getLogger("inspecto_ml.baseline")
 
 
-def _features(args: argparse.Namespace, manifest: Manifest) -> tuple[list[str], np.ndarray, float]:
+def load_features(
+    args: argparse.Namespace, manifest: Manifest
+) -> tuple[list[str], np.ndarray, float]:
+    """ResNet-50 features of the split: uids, matrix and seconds spent; cached by split version."""
     cache = args.features / f"resnet50-{manifest.version[:12]}.npz"
     if cache.exists():
         stored = np.load(cache, allow_pickle=False)
@@ -53,7 +56,7 @@ def _features(args: argparse.Namespace, manifest: Manifest) -> tuple[list[str], 
 def build_run(args: argparse.Namespace) -> dict[str, Any]:
     """Features, both baselines and their metrics."""
     manifest = load_manifest(args.split)
-    order, features, seconds = _features(args, manifest)
+    order, features, seconds = load_features(args, manifest)
     parts = {}
     for part in Part:
         entries = manifest.part(part)
