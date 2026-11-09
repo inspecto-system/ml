@@ -29,7 +29,9 @@ def test_command_line_exports_an_equivalent_model(
     common = ["--bd3", str(bd3), "--split", str(split), "--features", str(tmp_path / "f")]
     baseline_cli.main([*common, "--out", str(tmp_path / "run.json")])
 
-    export_cli.main([*common, "--run", str(tmp_path / "run.json"), "--out-dir", str(tmp_path / "m")])
+    export_cli.main(
+        [*common, "--run", str(tmp_path / "run.json"), "--out-dir", str(tmp_path / "m")]
+    )
 
     info = json.loads((tmp_path / "m" / "model.json").read_text(encoding="utf-8"))
     assert (tmp_path / "m" / "model.onnx").stat().st_size > 0
