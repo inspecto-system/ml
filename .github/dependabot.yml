@@ -12,6 +12,11 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # The projects require Python 3.12 (requires-python, .python-version): only 3.12.x images.
+      # Moving to a newer Python is a separate change of both projects, their locks and the image.
+      - dependency-name: python
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
