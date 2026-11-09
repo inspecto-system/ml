@@ -4,10 +4,11 @@ from pathlib import Path
 
 import numpy as np
 
-from inspecto_ml.audit.__main__ import SDNET_INNER_ARCHIVE, main
+from inspecto_ml.audit.__main__ import main
 from inspecto_ml.audit.duplicates import DuplicateGroup, Scope
 from inspecto_ml.audit.records import ImageRecord
 from inspecto_ml.audit.report import dataset_summary, duplicate_summary
+from inspecto_ml.datasets import SDNET_INNER_ARCHIVE
 from tests.audit.helpers import ImageFactory, jpeg_bytes, write_zip
 
 
