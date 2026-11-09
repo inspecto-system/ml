@@ -1,6 +1,8 @@
 """Per-image facts used by the audit: content digest, perceptual hash, size, format, errors."""
 
 import hashlib
+import logging
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 from PIL import Image, UnidentifiedImageError
@@ -8,6 +10,9 @@ from PIL import Image, UnidentifiedImageError
 from inspecto_ml.audit.samples import Sample
 
 HASH_SIDE = 8
+PROGRESS_EVERY = 5000
+
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -72,3 +77,13 @@ def inspect_sample(sample: Sample) -> ImageRecord:
             )
     except (OSError, UnidentifiedImageError, ValueError) as error:
         return ImageRecord(sample.dataset, sample.label, sample.key, digest, error=str(error))
+
+
+def inspect_all(name: str, samples: Iterable[Sample]) -> list[ImageRecord]:
+    """Inspect every sample of a dataset, logging progress."""
+    records = []
+    for count, sample in enumerate(samples, start=1):
+        records.append(inspect_sample(sample))
+        if count % PROGRESS_EVERY == 0:
+            log.info("%s: %d images", name, count)
+    return records

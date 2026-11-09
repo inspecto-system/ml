@@ -7,6 +7,9 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "numpy>=2.5.4",
     "pillow>=13.0.0",
+    "scikit-learn>=1.9.1",
+    "torch>=2.15.0",
+    "torchvision>=0.29.2",
 ]
 
 [dependency-groups]
@@ -23,6 +26,16 @@ build-backend = "uv_build"
 
 [tool.uv]
 required-version = "==0.13.7"
+
+# PyTorch builds without CUDA (ADR-027: training on CPU); the official PyTorch index serves them.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
 
 [tool.ruff]
 line-length = 100
@@ -61,3 +74,8 @@ branch = true
 
 [tool.coverage.report]
 fail_under = 80
+
+# scikit-learn and torchvision ship no type information (no py.typed, no stubs package).
+[[tool.mypy.overrides]]
+module = ["sklearn.*", "torchvision.*"]
+ignore_missing_imports = true
